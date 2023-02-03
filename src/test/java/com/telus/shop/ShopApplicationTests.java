@@ -16,9 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -26,12 +24,14 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ShopApplicationTests {
 
+    public static final String serialNumber1 = "fdf75685-e8c3-479e-b8a0-bfbfd7a11db3";
+    private static int stockItemsSize;
     final Logger logger = LoggerFactory.getLogger(ShopApplicationTests.class);
 
 
     @BeforeAll
     static void setup() {
-        Stock.getInstance().getItems().add(new Item("waiter", "fdf75685-e8c3-479e-b8a0-bfbfd7a11db3"));
+        Stock.getInstance().getItems().add(new Item("waiter", serialNumber1));
         Stock.getInstance().getItems().add(new Item("window", "2a6d7fe4-5244-40ef-bb77-5b1fa5b327b5"));
         Stock.getInstance().getItems().add(new Item("winter", "f3e2a894-4bc8-4d1f-a225-a76bf4be12b7"));
         Stock.getInstance().getItems().add(new Item("wisdom", "84cfc599-4ae7-4b07-bdc8-150c00577898"));
@@ -52,13 +52,56 @@ class ShopApplicationTests {
     @Autowired
     private TestRestTemplate testRestTemplate;
 
+    // Since I have initialized my stock with 12 items, getting
+    // the list of items first-hand should return a list of the
+    // very same size and OK (200) status.
     @Test
-    void test() {
+    void test001() {
         final int stockItemsSize = Stock.getInstance().getItems().size();
         final ResponseEntity<List> entity = testRestTemplate.exchange("/items?reserved=false", HttpMethod.GET, new HttpEntity<>(new ItemService()), List.class);
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(entity.getBody()).asList().size().isEqualTo(stockItemsSize);
-        logger.info("entity.getBody().toString(): {}", entity.getBody().toString());
     }
+
+    // Trying to reserve an item without specifying a
+    // serial number should result in Bad Request (400) status.
+    // Stock should remain unaffected.
+    @Test
+    void test002() {
+        final int stockItemsSize = Stock.getInstance().getItems().size();
+        final ResponseEntity<String> entity = testRestTemplate.exchange("/items", HttpMethod.PUT, new HttpEntity<>(new ItemService()), String.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(Stock.getInstance().getItems().size()).isEqualTo(stockItemsSize);
+    }
+
+    // Similarly, trying to reserve an item while specifying a serial number
+    // that doesn't comply to the defined pattern should result in Bad Request (400) status.
+    // Stock should remain unaffected.
+    @Test
+    void test003() {
+        final int stockItemsSize = Stock.getInstance().getItems().size();
+        final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=wontwork", HttpMethod.PUT, new HttpEntity<>(new ItemService()), String.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(Stock.getInstance().getItems().size()).isEqualTo(stockItemsSize);
+    }
+
+    // Now, trying to reserve an item while specifying a serial number
+    // that does not exist should result in Not Found (404) status.
+    // Stock should remain unaffected.
+    @Test
+    void test004() {
+        final int stockItemsSize = Stock.getInstance().getItems().size();
+        final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=6b71b58c-320b-4c7e-a20b-b2c98fb5f161", HttpMethod.PUT, new HttpEntity<>(new ItemService()), String.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(Stock.getInstance().getItems().size()).isEqualTo(stockItemsSize);
+    }
+
+    @Test
+    void test005() {
+        final int stockItemsSize = Stock.getInstance().getItems().size();
+        final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=" + serialNumber1, HttpMethod.PUT, new HttpEntity<>(new ItemService()), String.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
 
 }

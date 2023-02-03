@@ -5,9 +5,22 @@ import java.util.List;
 
 public class Stock {
 
+    private static Stock instance;
+
     private List<Item> items = new ArrayList<Item>();
 
-    public Stock() {
+    private Stock() {
+    }
+
+    public static Stock getInstance() {
+        if (instance == null) {
+            synchronized (Stock.class) {
+                if (instance == null) {
+                    instance = new Stock();
+                }
+            }
+        }
+        return instance;
     }
 
     public List<Item> getItems() {

@@ -55,6 +55,7 @@ public class ItemService {
                     rb.status(Response.Status.CONFLICT);
                     break;
                 }
+                rb.entity(Stock.getInstance().getItems().get(i));
                 Stock.getInstance().getItems().get(i).setReserved(true);
                 rb.status(Response.Status.OK);
                 break;
@@ -75,10 +76,27 @@ public class ItemService {
                 if (!Stock.getInstance().getItems().get(i).getSerialNumber().equalsIgnoreCase(serialNumber)) {
                     continue;
                 }
+                rb.entity(Stock.getInstance().getItems().get(i));
                 Stock.getInstance().getItems().remove(i);
                 rb.status(Response.Status.OK);
                 break;
             }
+        } catch (Exception e) {
+            logger.error("failed to reserve item", e);
+        }
+        return rb.build();
+    }
+
+    @PATCH
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response loadItem(@QueryParam("serialNumber") @NotNull @Valid @Pattern(regexp = UUID_V4_STRING) String serialNumber, @QueryParam("name") @NotNull String name,  @QueryParam("description") String description) {
+        final Response.ResponseBuilder rb = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
+        try {
+            final Item item = new Item(name, serialNumber);
+            item.setDescription(description);
+            Stock.getInstance().getItems().add(item);
+            rb.entity(item);
+            rb.status(Response.Status.OK);
         } catch (Exception e) {
             logger.error("failed to reserve item", e);
         }

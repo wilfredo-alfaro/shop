@@ -97,7 +97,7 @@ class ShopApplicationTests {
     // Trying to reserv an item that is available should result in OK (200) status.
     @Test
     void test006() {
-        final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=" + serialNumber1, HttpMethod.PUT, new HttpEntity<>(new ItemService()), String.class);
+        final ResponseEntity<Item> entity = testRestTemplate.exchange("/items?serialNumber=" + serialNumber1, HttpMethod.PUT, new HttpEntity<>(new ItemService()), Item.class);
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
@@ -147,7 +147,7 @@ class ShopApplicationTests {
     // Trying to purchase an item that is available or reserved should result in OK (200) status.
     @Test
     void test012() {
-        final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=" + serialNumber1, HttpMethod.POST, new HttpEntity<>(new ItemService()), String.class);
+        final ResponseEntity<Item> entity = testRestTemplate.exchange("/items?serialNumber=" + serialNumber1, HttpMethod.POST, new HttpEntity<>(new ItemService()), Item.class);
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 

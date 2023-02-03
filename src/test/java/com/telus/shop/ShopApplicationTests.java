@@ -77,7 +77,6 @@ class ShopApplicationTests {
     // serial number should result in Bad Request (400) status.
     @Test
     void test003() {
-        final int stockItemsSize = Stock.getInstance().getItems().size();
         final ResponseEntity<String> entity = testRestTemplate.exchange("/items", HttpMethod.PUT, new HttpEntity<>(new ItemService()), String.class);
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -86,7 +85,6 @@ class ShopApplicationTests {
     // that doesn't comply to the defined pattern should result in Bad Request (400) status.
     @Test
     void test004() {
-        final int stockItemsSize = Stock.getInstance().getItems().size();
         final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=wontwork", HttpMethod.PUT, new HttpEntity<>(new ItemService()), String.class);
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
@@ -95,20 +93,19 @@ class ShopApplicationTests {
     // that does not exist should result in Not Found (404) status.
     @Test
     void test005() {
-        final int stockItemsSize = Stock.getInstance().getItems().size();
         final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=6b71b58c-320b-4c7e-a20b-b2c98fb5f161", HttpMethod.PUT, new HttpEntity<>(new ItemService()), String.class);
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
+    // Trying to reserv an item that is available should result in OK (200) status.
     @Test
     void test006() {
-        final int stockItemsSize = Stock.getInstance().getItems().size();
         final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=" + serialNumber1, HttpMethod.PUT, new HttpEntity<>(new ItemService()), String.class);
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     // Getting the list of available items should return a list of
-    // size 0 and OK (200) status.
+    // size 12 and OK (200) status.
     @Test
     void test007() {
         final ResponseEntity<List> entity = testRestTemplate.exchange("/items?reserved=false", HttpMethod.GET, new HttpEntity<>(new ItemService()), List.class);
@@ -123,6 +120,67 @@ class ShopApplicationTests {
         final ResponseEntity<List> entity = testRestTemplate.exchange("/items?reserved=true", HttpMethod.GET, new HttpEntity<>(new ItemService()), List.class);
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(initialReservedSize + 1).isEqualTo(entity.getBody().size());
+    }
+
+
+
+
+
+
+    // Trying to purchase an item without specifying a
+    // serial number should result in Bad Request (400) status.
+    @Test
+    void test009() {
+        final ResponseEntity<String> entity = testRestTemplate.exchange("/items", HttpMethod.POST, new HttpEntity<>(new ItemService()), String.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    // Similarly, trying to purchase an item while specifying a serial number
+    // that doesn't comply to the defined pattern should result in Bad Request (400) status.
+    @Test
+    void test010() {
+        final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=wontwork", HttpMethod.POST, new HttpEntity<>(new ItemService()), String.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    // Now, trying to purchase an item while specifying a serial number
+    // that does not exist should result in Not Found (404) status.
+    @Test
+    void test011() {
+        final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=6b71b58c-320b-4c7e-a20b-b2c98fb5f161", HttpMethod.POST, new HttpEntity<>(new ItemService()), String.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    // Trying to purchase an item that is available or reserved should result in OK (200) status.
+    @Test
+    void test012() {
+        final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=" + serialNumber1, HttpMethod.POST, new HttpEntity<>(new ItemService()), String.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    // Trying to purchase the same item again should result in Not Found (404) status.
+    @Test
+    void test013() {
+        final ResponseEntity<String> entity = testRestTemplate.exchange("/items?serialNumber=" + serialNumber1, HttpMethod.POST, new HttpEntity<>(new ItemService()), String.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    // Getting the list of available items should return a list of
+    // size 11 and OK (200) status.
+    @Test
+    void test014() {
+        final ResponseEntity<List> entity = testRestTemplate.exchange("/items?reserved=false", HttpMethod.GET, new HttpEntity<>(new ItemService()), List.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(initialAvailableSize - 1).isEqualTo(entity.getBody().size());
+    }
+
+    // Getting the list of reserved items should return a list of
+    // size 0 and OK (200) status.
+    @Test
+    void test015() {
+        final ResponseEntity<List> entity = testRestTemplate.exchange("/items?reserved=true", HttpMethod.GET, new HttpEntity<>(new ItemService()), List.class);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(initialReservedSize).isEqualTo(entity.getBody().size());
     }
 
 }

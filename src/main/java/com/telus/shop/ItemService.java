@@ -67,4 +67,24 @@ public class ItemService {
         return rb.build();
     }
 
+    @POST
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response purchaseItem(@QueryParam("serialNumber") @NotNull @Valid @Pattern(regexp=UUID_V4_STRING) String serialNumber) {
+        final Response.ResponseBuilder rb = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
+        try {
+            rb.status(Response.Status.NOT_FOUND);
+            for (int i = 0; i < Stock.getInstance().getItems().size(); i++) {
+                if (!Stock.getInstance().getItems().get(i).getSerialNumber().equalsIgnoreCase(serialNumber)) {
+                    continue;
+                }
+                Stock.getInstance().getItems().remove(i);
+                rb.status(Response.Status.OK);
+                break;
+            }
+        } catch (Exception e) {
+            logger.error("failed to reserve item", e);
+        }
+        return rb.build();
+    }
+
 }

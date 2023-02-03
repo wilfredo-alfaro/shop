@@ -4,7 +4,6 @@ import com.telus.shop.model.Item;
 import com.telus.shop.model.Stock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
@@ -20,9 +19,8 @@ import java.util.List;
 @Path("items")
 public class ItemService {
 
-    final Logger logger = LoggerFactory.getLogger(ItemService.class);
-
     public static final String UUID_V4_STRING = "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}";
+    final Logger logger = LoggerFactory.getLogger(ItemService.class);
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
@@ -45,7 +43,7 @@ public class ItemService {
 
     @PUT
     @Produces({MediaType.APPLICATION_JSON})
-    public Response reserveItem(@QueryParam("serialNumber") @NotNull @Valid @Pattern(regexp=UUID_V4_STRING) String serialNumber) {
+    public Response reserveItem(@QueryParam("serialNumber") @NotNull @Valid @Pattern(regexp = UUID_V4_STRING) String serialNumber) {
         final Response.ResponseBuilder rb = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         try {
             rb.status(Response.Status.NOT_FOUND);
@@ -69,7 +67,7 @@ public class ItemService {
 
     @POST
     @Produces({MediaType.APPLICATION_JSON})
-    public Response purchaseItem(@QueryParam("serialNumber") @NotNull @Valid @Pattern(regexp=UUID_V4_STRING) String serialNumber) {
+    public Response purchaseItem(@QueryParam("serialNumber") @NotNull @Valid @Pattern(regexp = UUID_V4_STRING) String serialNumber) {
         final Response.ResponseBuilder rb = Response.status(Response.Status.INTERNAL_SERVER_ERROR);
         try {
             rb.status(Response.Status.NOT_FOUND);

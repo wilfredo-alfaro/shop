@@ -25,8 +25,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class ShopApplicationTests {
 
     public static final String serialNumber1 = "fdf75685-e8c3-479e-b8a0-bfbfd7a11db3";
+    private static final int initialAvailableSize = 12;
+    private static final int initialReservedSize = 0;
     final Logger logger = LoggerFactory.getLogger(ShopApplicationTests.class);
-
+    @Autowired
+    private TestRestTemplate testRestTemplate;
 
     @BeforeAll
     static void setup() {
@@ -44,15 +47,9 @@ class ShopApplicationTests {
         Stock.getInstance().getItems().add(new Item("zodiac", "d90317dd-0f56-4781-8719-529beb8fc76c"));
     }
 
-    private static final int initialAvailableSize = 12;
-    private static final int initialReservedSize = 0;
-
     @Test
     void contextLoads() {
     }
-
-    @Autowired
-    private TestRestTemplate testRestTemplate;
 
     // Since I have initialized my stock with 12 items, getting
     // the list of available items should return a list of
@@ -121,10 +118,6 @@ class ShopApplicationTests {
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(initialReservedSize + 1).isEqualTo(entity.getBody().size());
     }
-
-
-
-
 
 
     // Trying to purchase an item without specifying a

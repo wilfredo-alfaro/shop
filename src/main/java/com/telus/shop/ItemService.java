@@ -21,7 +21,7 @@ import java.util.UUID;
 @Path("items")
 public class ItemService {
 
-    Logger logger = LoggerFactory.getLogger(ItemService.class);
+    final Logger logger = LoggerFactory.getLogger(ItemService.class);
 
     public static final String X_UUID = "X-UUID";
 
